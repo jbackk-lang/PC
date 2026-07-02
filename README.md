@@ -524,3 +524,267 @@ Każdy cykl:
 
 Pipeline jest tym, co czyni PC pełnoprawnym **TIMDR‑CPU**, a nie tylko zestawem operatorów geometrycznych.
 
+## 11. Rejestry TIMDR — warstwa robocza rdzenia PC
+
+TIMDR‑CPU nie używa klasycznych rejestrów binarnych.  
+Zamiast tego operuje na rejestrach geometrycznych, które przechowują stany `State9` oraz ich zakodowane odpowiedniki 0–255.
+
+Rejestry TIMDR są zbudowane na trzech warstwach:
+
+1. **warstwa geometryczna** — State9 (9 × ±1),  
+2. **warstwa dopuszczalności** — F4‑RED (252 stany),  
+3. **warstwa adresowa** — kod 0–255.
+
+Każdy rejestr TIMDR jest w pełni zgodny z filtrem F4‑RED i warstwą kodowania 252→256.
+
+### 11.1. R0 — rejestr wejściowy (Input Register)
+
+R0 przechowuje aktualny stan wejściowy pipeline:
+
+
+
+\[
+R0 = S_0
+\]
+
+
+
+Jest to jedyny rejestr, który może przyjmować stan spoza 252 konfiguracji.  
+Każdy taki stan jest natychmiast walidowany przez `PCFilterLayer`.
+
+Jeśli stan jest niedopuszczalny — pipeline nie startuje.
+
+### 11.2. R1 — rejestr ruchu (Motion Register)
+
+R1 przechowuje wynik operacji Motion:
+
+
+
+\[
+R1 = \text{Motion}(R0)
+\]
+
+
+
+Stan musi być dopuszczalny w F4‑RED.
+
+### 11.3. R2 — rejestr obrotu (Rotation Register)
+
+R2 przechowuje wynik Rotation:
+
+
+
+\[
+R2 = \text{Rotation}(R1)
+\]
+
+
+
+Jest to rejestr triady λ‑τ‑ρ.
+
+### 11.4. R3 — rejestr skrętu (Twist Register)
+
+R3 przechowuje wynik TwistOperator:
+
+
+
+\[
+R3 = \text{TwistOperator}(R2)
+\]
+
+
+
+Jest to rejestr skrętu Möbiusa.
+
+### 11.5. R4 — rejestr tetroidu (Tetroid Register)
+
+R4 przechowuje wynik Tetroid:
+
+
+
+\[
+R4 = \text{Tetroid}(R3)
+\]
+
+
+
+Jest to rejestr stabilizacji czterowymiarowej.
+
+### 11.6. R5 — rejestr projekcji (Triangle Register)
+
+R5 przechowuje wynik Triangle:
+
+
+
+\[
+R5 = \text{Triangle}(R4)
+\]
+
+
+
+Jest to rejestr projekcji lokalnej.
+
+### 11.7. R6 — rejestr interpretacji (SkretAI Register)
+
+R6 przechowuje wynik SkretAI:
+
+
+
+\[
+R6 = \text{SkretAI}(R5)
+\]
+
+
+
+Jest to rejestr semantyczny TIMDR‑CPU.
+
+### 11.8. R7 — rejestr pamięci (Memory Register)
+
+R7 przechowuje stan końcowy cyklu:
+
+
+
+\[
+R7 = S_6
+\]
+
+
+
+Jest to jedyny rejestr, który zapisuje sekwencje stanów.
+
+### 11.9. Rejestry kodowe (K0–K7)
+
+Każdy rejestr geometryczny ma swój odpowiednik kodowy:
+
+
+
+\[
+K_i = \text{encode}(R_i)
+\]
+
+
+
+gdzie:
+
+
+
+\[
+K_i \in \{0,1,\dots,255\}
+\]
+
+
+
+Rejestry kodowe są warstwą adresową TIMDR‑CPU.
+
+### 11.10. Znaczenie rejestrów TIMDR
+
+Rejestry TIMDR:
+
+- utrzymują pełną sekwencję transformacji geometrycznych,  
+- zapewniają spójność pipeline,  
+- umożliwiają odwracalność operacji,  
+- pozwalają na integrację z pamięcią, IO i magistralą TIMDR.
+
+W klasycznym CPU rejestry przechowują liczby.  
+W TIMDR‑CPU rejestry przechowują **konfiguracje pola**.
+
+To jest fundamentalna różnica między TIMDR a klasyczną architekturą binarną.
+
+## 12. Magistrala TIMDR — warstwa przesyłu stanów geometrycznych
+
+Magistrala TIMDR jest kanałem przesyłu stanów `State9` pomiędzy rejestrami i operatorami rdzenia PC.  
+W przeciwieństwie do klasycznej magistrali binarnej, TIMDR‑Bus przenosi **konfiguracje pola**, a nie wartości liczbowe.
+
+Magistrala działa na trzech warstwach:
+
+1. **warstwa geometryczna** — przesył State9 (9 × ±1),  
+2. **warstwa dopuszczalności** — filtr F4‑RED (252 stany),  
+3. **warstwa adresowa** — kod 0–255.
+
+Każdy transfer magistrali jest walidowany przez `PCFilterLayer`.
+
+### 12.1. Struktura magistrali TIMDR
+
+Magistrala składa się z trzech kanałów:
+
+- **G‑Bus (Geometry Bus)** — przesył surowego State9,  
+- **F‑Bus (Filter Bus)** — walidacja dopuszczalności F4‑RED,  
+- **A‑Bus (Address Bus)** — przesył kodów 0–255.
+
+Każdy operator PC korzysta z tych trzech kanałów w ustalonej kolejności.
+
+### 12.2. Przepływ danych przez magistralę
+
+Dla każdego kroku pipeline:
+
+
+
+\[
+R_i \xrightarrow{\text{G‑Bus}} S_i
+\]
+
+
+
+
+
+\[
+S_i \xrightarrow{\text{F‑Bus}} \text{walidacja F4‑RED}
+\]
+
+
+
+
+
+\[
+S_i \xrightarrow{\text{A‑Bus}} K_i
+\]
+
+
+
+gdzie:
+
+- \(R_i\) — rejestr geometryczny,  
+- \(S_i\) — stan po transformacji,  
+- \(K_i\) — kod 0–255.
+
+Magistrala TIMDR zapewnia, że każdy operator:
+
+- otrzymuje stan geometryczny,  
+- przetwarza go,  
+- oddaje wynik do filtra,  
+- filtr dopuszcza lub odrzuca stan,  
+- kod jest generowany tylko dla stanów dopuszczalnych.
+
+### 12.3. Magistrala jako kontrola stabilności
+
+TIMDR‑Bus pełni funkcję kontroli stabilności:
+
+- jeśli stan jest niedopuszczalny, magistrala **blokuje transfer**,  
+- pipeline zatrzymuje się na tym kroku,  
+- rejestry nie są aktualizowane,  
+- pamięć nie zapisuje sekwencji.
+
+Magistrala jest więc mechanizmem bezpieczeństwa rdzenia PC.
+
+### 12.4. Magistrala jako warstwa IO TIMDR‑CPU
+
+A‑Bus (Address Bus) jest warstwą IO TIMDR‑CPU:
+
+- urządzenia zewnętrzne komunikują się kodami 0–255,  
+- rdzeń PC pracuje na State9,  
+- magistrala tłumaczy między tymi warstwami.
+
+To pozwala TIMDR‑CPU działać w klasycznym środowisku komputerowym, zachowując swoją geometryczną naturę.
+
+### 12.5. Znaczenie magistrali TIMDR
+
+Magistrala TIMDR:
+
+- zapewnia spójność pipeline,  
+- utrzymuje dopuszczalność stanów,  
+- umożliwia integrację z pamięcią i IO,  
+- jest warstwą bezpieczeństwa rdzenia,  
+- jest podstawą działania TIMDR‑CPU.
+
+W klasycznym CPU magistrala przenosi liczby.  
+W TIMDR‑CPU magistrala przenosi **konfiguracje pola**.
