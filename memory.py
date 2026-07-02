@@ -1,33 +1,18 @@
-from dataclasses import dataclass
+# memory.py — przebudowany pod filtr F4-RED
 
-@dataclass
-class TransitionMemoryEntry:
-    twist_deltas: list
-    rotation_delta: float
-    motion_energy: float
-    motion_tension: float
-    j_energy: float
-    j_tension: float
-    j_stability: float
+from pc_filter_layer import PCFilterLayer
+
+pc_filter = PCFilterLayer()
 
 class TransitionMemory:
-    def __init__(self, max_size=5000):
-        self.max_size = max_size
-        self.memory = []
+    def __init__(self):
+        self.entries = []
 
-    def add(self, twists, rotation, motion, j_point):
-        entry = TransitionMemoryEntry(
-            [t.delta for t in twists],
-            rotation.total_delta,
-            motion.energy,
-            motion.tension,
-            j_point.compressed_energy,
-            j_point.compressed_tension,
-            j_point.stability
-        )
-        self.memory.append(entry)
-        if len(self.memory) > self.max_size:
-            self.memory.pop(0)
+    def push(self, state_vector):
+        if pc_filter.validate(state_vector):
+            self.entries.append(state_vector)
+            return True
+        return False
 
-    def last(self):
-        return self.memory[-1] if self.memory else None
+    def get(self):
+        return self.entries
