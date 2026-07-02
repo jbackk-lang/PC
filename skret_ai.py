@@ -1,22 +1,19 @@
-from triangle import Triangle
-from tetroid import Tetroid
-from twist import TwistOperator
-from rotation import RotationOperator
-from motion import Motion
-from jcompressor import JCompressor
-from memory import TransitionMemory
+# skret_ai.py — przebudowany pod filtr F4-RED
+
+from pc_filter_layer import PCFilterLayer
+
+pc_filter = PCFilterLayer()
 
 class SkretAI:
-    def __init__(self, a, b, c, d):
-        self.triangle = Triangle(a, b, c)
-        self.tetroid = Tetroid(self.triangle, d)
-        self.memory = TransitionMemory()
+    def __init__(self):
+        pass
 
-    def process(self):
-        twists = TwistOperator.compute(self.tetroid)
-        rotation = RotationOperator.build_cycle(twists)
-        motion = Motion.from_rotation(rotation)
-        j_point = JCompressor.compress(motion)
+    def process(self, state_vector):
+        interpreted = self._internal_process(state_vector)
 
-        self.memory.add(twists, rotation, motion, j_point)
-        return j_point
+        if pc_filter.validate(interpreted):
+            return interpreted
+        return None
+
+    def _internal_process(self, state):
+        return state
