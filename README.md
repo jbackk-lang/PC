@@ -1489,3 +1489,141 @@ TIMDR‑IO:
 - jest podstawą działania TIMDR‑komputera jako maszyny geometrycznej.
 
 TIMDR‑IO jest tym, co pozwala TIMDR‑CPU **rozmawiać z otoczeniem**, zachowując swoją geometryczną naturę.
+## 18. TIMDR‑VM — Maszyna Wirtualna Pola TIMDR
+
+TIMDR‑VM jest maszyną wirtualną działającą nad TIMDR‑OS i TIMDR‑CPU.  
+W klasycznym komputerze VM emuluje procesor binarny.  
+W TIMDR‑komputerze VM emuluje **ewolucję pola geometrycznego** w przestrzeni F4‑RED.
+
+TIMDR‑VM nie uruchamia programów binarnych.  
+TIMDR‑VM uruchamia **programy geometryczne**, które są sekwencjami instrukcji TIMDR‑ISA operujących na `State9`.
+
+TIMDR‑VM jest warstwą, która pozwala TIMDR‑CPU wykonywać złożone, wieloetapowe operacje pola.
+
+---
+
+### 18.1. Struktura TIMDR‑VM
+
+TIMDR‑VM składa się z czterech warstw:
+
+1. **VM‑Loader** — ładowanie programu geometrycznego  
+2. **VM‑Interpreter** — interpretacja instrukcji TIMDR‑ISA  
+3. **VM‑Scheduler** — harmonogram cykli pola  
+4. **VM‑Memory** — pamięć programu geometrycznego
+
+Każda warstwa działa na `State9` i kodach 0–255.
+
+---
+
+### 18.2. VM‑Loader — ładowanie programu geometrycznego
+
+Program geometryczny TIMDR‑VM jest sekwencją:
+
+
+
+\[
+P = [I_1, I_2, \dots, I_n]
+\]
+
+
+
+gdzie każda instrukcja \(I_k\) należy do TIMDR‑ISA:
+
+- MOT  
+- ROT  
+- TWI  
+- TET  
+- TRI  
+- SKR  
+- MEM
+
+Loader:
+
+- wczytuje program,  
+- waliduje go,  
+- przygotowuje do wykonania przez VM‑Interpreter.
+
+Loader nie ładuje bajtów.  
+Loader ładuje **instrukcje pola**.
+
+---
+
+### 18.3. VM‑Interpreter — interpretacja instrukcji pola
+
+Interpreter wykonuje każdą instrukcję:
+
+
+
+\[
+S_{k+1} = I_k(S_k)
+\]
+
+
+
+Każda instrukcja:
+
+- działa na `State9`,  
+- jest walidowana przez F4‑RED,  
+- aktualizuje odpowiedni rejestr R0–R7,  
+- generuje kod 0–255,  
+- jest wykonywana w cyklu TIMDR‑Clock.
+
+Interpreter jest odpowiednikiem klasycznego „bytecode interpreter”, ale operuje na **geometrii pola**.
+
+---
+
+### 18.4. VM‑Scheduler — harmonogram pola
+
+Scheduler VM:
+
+- steruje cyklami TIMDR‑Clock,  
+- kontroluje stabilność sekwencji,  
+- blokuje niedopuszczalne stany,  
+- zarządza przepływem przez magistralę TIMDR.
+
+Scheduler nie planuje wątków.  
+Scheduler planuje **ewolucję pola geometrycznego**.
+
+---
+
+### 18.5. VM‑Memory — pamięć programu geometrycznego
+
+VM‑Memory przechowuje:
+
+- program geometryczny,  
+- bieżący stan pola,  
+- historię wykonania,  
+- sekwencje dopuszczalnych stanów.
+
+Każdy zapis musi przejść przez F4‑RED.  
+Każdy odczyt zwraca pełny `State9`.
+
+VM‑Memory jest odpowiednikiem pamięci programu w klasycznym VM, ale operuje na **konfiguracjach pola**.
+
+---
+
+### 18.6. TIMDR‑VM jako maszyna wirtualna pola
+
+TIMDR‑VM:
+
+- wykonuje programy geometryczne,  
+- zarządza sekwencjami instrukcji TIMDR‑ISA,  
+- utrzymuje stabilność pola,  
+- integruje się z TIMDR‑OS, TIMDR‑IO i TIMDR‑CPU,  
+- pozwala tworzyć TIMDR‑Apps (programy geometryczne wysokiego poziomu).
+
+TIMDR‑VM jest tym, co pozwala TIMDR‑CPU wykonywać **złożone operacje pola**, a nie tylko pojedyncze instrukcje.
+
+---
+
+### 18.7. Znaczenie TIMDR‑VM
+
+TIMDR‑VM:
+
+- zamyka architekturę TIMDR‑komputera,  
+- pozwala uruchamiać programy geometryczne,  
+- tworzy warstwę abstrakcji nad TIMDR‑ISA,  
+- umożliwia budowę TIMDR‑Apps, TIMDR‑Services i TIMDR‑Systems,  
+- jest podstawą działania TIMDR jako pełnej maszyny geometrycznej.
+
+TIMDR‑VM jest odpowiednikiem JVM lub CLR, ale operuje na **State9**, nie na bajtach.
