@@ -1,24 +1,19 @@
-from dataclasses import dataclass
-from triangle import Triangle
+# tetroid.py — przebudowany pod filtr F4-RED
 
-@dataclass
-class TetraState:
-    name: str
-    value: float
+from pc_filter_layer import PCFilterLayer
+
+pc_filter = PCFilterLayer()
 
 class Tetroid:
-    def __init__(self, triangle: Triangle, d: float):
-        a, b, c = triangle.as_vector()
-        self.states = [
-            TetraState("A", a),
-            TetraState("B", b),
-            TetraState("C", c),
-            TetraState("D", d),
-        ]
+    def __init__(self):
+        pass
 
-    def edges(self):
-        e = []
-        for i in range(len(self.states)):
-            for j in range(i + 1, len(self.states)):
-                e.append((self.states[i], self.states[j]))
-        return e
+    def evolve(self, state_vector):
+        new_state = self._internal_evolve(state_vector)
+
+        if pc_filter.validate(new_state):
+            return new_state
+        return None
+
+    def _internal_evolve(self, state):
+        return state
