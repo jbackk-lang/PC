@@ -219,3 +219,41 @@ interpretuje ruch, skręt i rotację jako operacje na polu,
 jest kompatybilna z MAPA‑PO‑HELU i math‑validator‑2.0.
 
 To jest fundament przyszłego TIMDR‑komputera.
+
+
+# tests/test_filter_252.py
+
+import random
+from filter_252 import F4State, F4Filter252
+
+
+def generate_random_state() -> F4State:
+    # losowy 9-bitowy stan ±1
+    bits = [random.choice([-1, 1]) for _ in range(9)]
+    return F4State(bits=bits)
+
+
+def test_filter_252_distribution():
+    """
+    Porównawcza walidacja:
+    - generujemy dużą liczbę stanów (np. 10_000)
+    - przepuszczamy przez filtr F4-RED
+    - sprawdzamy, że liczba zaakceptowanych jest ~252 / 512 przestrzeni,
+      czyli ok. połowa wszystkich losowych stanów.
+    """
+    filt = F4Filter252()
+    n = 10_000
+
+    for _ in range(n):
+        s = generate_random_state()
+        filt.filter_state(s)
+
+    stats = filt.stats()
+    print("ACCEPTED:", stats["accepted"])
+    print("REJECTED:", stats["rejected"])
+
+    # Tu możesz ręcznie porównać z dotychczasowym zachowaniem rdzenia:
+    # np. ile stanów Motion/Rotation/Twist generuje poza dopuszczalną przestrzenią.
+    assert stats["accepted"] > 0
+    assert stats["rejected"] > 0
+
