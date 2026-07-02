@@ -1120,3 +1120,228 @@ TIMDR‑ISA:
 - jest podstawą działania TIMDR‑komputera.
 
 TIMDR‑ISA jest tym, co czyni PC pełnoprawnym **procesorem geometrycznym**, a nie tylko zestawem operatorów.
+
+## 15. TIMDR‑M‑RAM — pamięć geometryczna TIMDR‑CPU
+
+TIMDR‑M‑RAM jest pamięcią operacyjną TIMDR‑CPU.  
+Nie przechowuje bitów 0/1, lecz **sekwencje stanów geometrycznych** `State9`, które przeszły pełny pipeline i zostały dopuszczone przez filtr F4‑RED.
+
+TIMDR‑M‑RAM jest pamięcią:
+
+- **geometryczną** — zapisuje konfiguracje pola,  
+- **sekwencyjną** — zapisuje kolejne kroki ewolucji,  
+- **walidowaną** — każdy zapis musi przejść przez F4‑RED,  
+- **adresowaną** — każdy stan ma kod 0–255 (warstwa 252→256).
+
+### 15.1. Struktura TIMDR‑M‑RAM
+
+TIMDR‑M‑RAM składa się z trzech warstw:
+
+1. **G‑Mem (Geometry Memory)** — zapis surowych stanów `State9`,  
+2. **F‑Mem (Filtered Memory)** — zapis tylko stanów dopuszczalnych F4‑RED,  
+3. **A‑Mem (Address Memory)** — zapis kodów 0–255.
+
+Każdy zapis pamięci jest walidowany przez `PCFilterLayer`.
+
+### 15.2. Model pamięci geometrycznej
+
+TIMDR‑M‑RAM przechowuje sekwencję:
+
+
+
+\[
+S_0, S_1, S_2, \dots, S_n
+\]
+
+
+
+gdzie każdy stan:
+
+- jest wynikiem pełnego cyklu TIMDR‑CPU,  
+- jest dopuszczalny w F4‑RED,  
+- ma swój kod 0–255.
+
+Pamięć geometryczna jest więc **historią ewolucji pola**.
+
+### 15.3. Zapis do pamięci (Memory Commit)
+
+Instrukcja MEM (sekcja 14) wykonuje zapis:
+
+
+
+\[
+\text{Memory.push}(S)
+\]
+
+
+
+Warunki zapisu:
+
+- stan musi być dopuszczalny (252 konfiguracje),  
+- pipeline musi zakończyć się poprawnie,  
+- TIMDR‑Clock musi zatwierdzić cykl.
+
+Jeśli którykolwiek warunek nie jest spełniony — zapis jest blokowany.
+
+### 15.4. Odczyt pamięci
+
+Odczyt pamięci zwraca sekwencję:
+
+
+
+\[
+\text{Memory.get()} = [S_0, S_1, \dots, S_n]
+\]
+
+
+
+Każdy element jest:
+
+- pełnym `State9`,  
+- dopuszczalnym w F4‑RED,  
+- odwracalnym do kodu 0–255.
+
+### 15.5. TIMDR‑M‑RAM jako pamięć operacyjna CPU
+
+TIMDR‑M‑RAM pełni funkcję:
+
+- **RAM** — przechowuje bieżące stany,  
+- **logu geometrycznego** — zapisuje ewolucję pola,  
+- **warstwy stabilności** — pozwala analizować sekwencję dopuszczalnych stanów,  
+- **warstwy kontrolnej** — pipeline może być debugowany przez analizę pamięci.
+
+W klasycznym CPU pamięć przechowuje liczby.  
+W TIMDR‑CPU pamięć przechowuje **konfiguracje pola**.
+
+### 15.6. Znaczenie TIMDR‑M‑RAM
+
+TIMDR‑M‑RAM:
+
+- jest kluczową warstwą operacyjną TIMDR‑CPU,  
+- umożliwia analizę sekwencji geometrycznych,  
+- zapewnia stabilność pipeline,  
+- integruje się z magistralą TIMDR,  
+- jest podstawą działania TIMDR‑komputera jako maszyny geometrycznej.
+
+TIMDR‑M‑RAM jest tym, co pozwala PC nie tylko przetwarzać stany, lecz także **zapamiętywać ewolucję pola**.
+
+## 16. TIMDR‑OS — Warstwa Systemowa TIMDR‑CPU
+
+TIMDR‑OS jest systemem operacyjnym działającym na rdzeniu TIMDR‑CPU.  
+Nie jest to klasyczny OS (Linux/Windows), ponieważ TIMDR‑CPU nie operuje na bitach, lecz na **konfiguracjach pola** (`State9`).  
+TIMDR‑OS zarządza cyklami geometrycznymi, pamięcią M‑RAM, magistralą TIMDR, zegarem TIMDR‑Clock i instrukcjami TIMDR‑ISA.
+
+TIMDR‑OS jest warstwą, która pozwala TIMDR‑CPU działać jako **pełny komputer geometryczny**.
+
+### 16.1. Struktura TIMDR‑OS
+
+TIMDR‑OS składa się z pięciu warstw:
+
+1. **Kernel Geometry** — jądro geometryczne  
+2. **Scheduler TIMDR‑Clock** — harmonogram cykli pola  
+3. **M‑RAM Manager** — zarządzanie pamięcią geometryczną  
+4. **ISA Dispatcher** — dyspozytor instrukcji TIMDR‑ISA  
+5. **IO Geometry Layer** — warstwa wejścia/wyjścia pola
+
+Każda warstwa działa na `State9` i kodach 0–255.
+
+### 16.2. Kernel Geometry — jądro TIMDR‑OS
+
+Jądro TIMDR‑OS nie zarządza procesami binarnymi.  
+Zarządza **procesami geometrycznymi**, czyli sekwencjami stanów pola.
+
+Kernel wykonuje:
+
+
+
+\[
+S_{n+1} = \text{Pipeline}(S_n)
+\]
+
+
+
+Każdy cykl:
+
+- zaczyna się od MOT,  
+- kończy się MEM,  
+- jest walidowany przez F4‑RED,  
+- jest zatwierdzany przez TIMDR‑Clock.
+
+Kernel Geometry jest odpowiednikiem jądra Linuxa, ale operuje na polu, nie na bitach.
+
+### 16.3. Scheduler TIMDR‑Clock
+
+Scheduler używa TIMDR‑Clock do sterowania:
+
+- kolejnością instrukcji TIMDR‑ISA,  
+- stabilnością pipeline,  
+- blokowaniem niedopuszczalnych stanów,  
+- synchronizacją magistrali TIMDR.
+
+Scheduler nie planuje procesów.  
+Scheduler planuje **ewolucję pola**.
+
+### 16.4. M‑RAM Manager — zarządzanie pamięcią geometryczną
+
+M‑RAM Manager zarządza:
+
+- sekwencjami stanów,  
+- historią pola,  
+- odczytem i zapisem `State9`,  
+- mapowaniem kodów 0–255.
+
+Każdy zapis pamięci musi przejść przez F4‑RED.  
+Każdy odczyt pamięci zwraca pełny stan geometryczny.
+
+M‑RAM Manager jest odpowiednikiem menedżera pamięci w klasycznym OS, ale operuje na **konfiguracjach pola**.
+
+### 16.5. ISA Dispatcher — dyspozytor instrukcji TIMDR‑ISA
+
+Dispatcher wykonuje instrukcje:
+
+- MOT  
+- ROT  
+- TWI  
+- TET  
+- TRI  
+- SKR  
+- MEM
+
+Każda instrukcja jest atomowa i niepodzielna.  
+Dispatcher gwarantuje, że instrukcje są wykonywane w poprawnej kolejności.
+
+Dispatcher jest odpowiednikiem modułu wykonawczego CPU, ale operuje na **State9**, nie na rejestrach binarnych.
+
+### 16.6. IO Geometry Layer — wejście/wyjście pola
+
+Warstwa IO tłumaczy:
+
+- sygnały zewnętrzne → kody 0–255 → State9,  
+- State9 → kody 0–255 → sygnały zewnętrzne.
+
+IO Geometry Layer jest odpowiednikiem sterowników urządzeń, ale operuje na **geometrii pola**.
+
+### 16.7. TIMDR‑OS jako system operacyjny pola
+
+TIMDR‑OS:
+
+- zarządza pipeline,  
+- kontroluje zegar,  
+- utrzymuje stabilność pola,  
+- zapisuje sekwencje w M‑RAM,  
+- wykonuje instrukcje TIMDR‑ISA,  
+- komunikuje się z IO przez magistralę TIMDR.
+
+TIMDR‑OS jest systemem operacyjnym, który nie zarządza plikami, procesami ani wątkami.  
+TIMDR‑OS zarządza **ewolucją pola geometrycznego**.
+
+### 16.8. Znaczenie TIMDR‑OS
+
+TIMDR‑OS jest warstwą, która:
+
+- zamyka architekturę TIMDR‑CPU,  
+- pozwala rdzeniowi PC działać jako komputer,  
+- umożliwia budowę TIMDR‑VM i TIMDR‑Apps,  
+- definiuje pełny model działania TIMDR‑komputera.
+
+TIMDR‑OS jest tym, co czyni TIMDR‑CPU **pełnym systemem geometrycznym**, a nie tylko rdzeniem obliczeniowym.
