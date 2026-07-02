@@ -1,23 +1,57 @@
-import math
+# jcompressor.py
+# JCompressor przebudowany pod F4-RED (252 stany)
+# Kompresja = redukcja ramienia + utrzymanie dopuszczalności konfiguracji
+
 from dataclasses import dataclass
+from typing import List
+
+from filter_252 import F4State, F4Filter252
+
 
 @dataclass
 class JPoint:
-    compressed_energy: float
-    compressed_tension: float
-    stability: float
+    """
+    Pojedynczy punkt w przestrzeni TIMDR:
+    wektor 9 pierwiastków strukturalnych (ΔS, τ, Λ × 3 ramiona) w stanie ±1.
+    """
+    bits: List[int]
+
+    def to_f4_state(self) -> F4State:
+        return F4State(bits=self.bits)
+
 
 class JCompressor:
-    @staticmethod
-    def compress(motion):
-        if motion.energy <= 0:
-            return JPoint(0.0, 0.0, 0.0)
+    """
+    JCompressor:
+    - wykonuje redukcję jednego ramienia (kompresja strukturalna)
+    - utrzymuje stan w dopuszczalnej przestrzeni 252 konfiguracji F4-RED
+    """
 
-        ce = math.log1p(motion.energy)
-        ct = motion.tension / (motion.energy + 1e-9)
+    def __init__(self):
+        self.filter = F4Filter252()
 
-        base_stability = 1.0 - min(1.0, ct)
-        direction_factor = 0.5 if motion.direction == 0 else 1.0
-        stability = max(0.0, min(1.0, base_stability * direction_factor))
+    def _reduce_arm(self, point: JPoint) -> JPoint:
+        """
+        Redukcja jednego ramienia:
+        Tu możesz wstawić swoją właściwą logikę kompresji.
+        Na razie: placeholder — nie zmienia wektora.
+        """
+        # TODO: podmień na swoją realną transformację redukcji ramienia
+        return point
 
-        return JPoint(ce, ct, stability)
+    def compress(self, point: JPoint) -> JPoint | None:
+        """
+        Główna operacja:
+        - redukcja ramienia
+        - walidacja F4-RED (252 stany)
+        - zwrot skompresowanego punktu albo None, jeśli stan jest niedopuszczalny
+        """
+        reduced = self._reduce_arm(point)
+        state = reduced.to_f4_state()
+
+        if self.filter.apply(state):
+            return reduced
+        return None
+
+    def stats(self) -> dict:
+        return self.filter.stats()
