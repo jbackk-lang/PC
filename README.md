@@ -1345,3 +1345,147 @@ TIMDR‑OS jest warstwą, która:
 - definiuje pełny model działania TIMDR‑komputera.
 
 TIMDR‑OS jest tym, co czyni TIMDR‑CPU **pełnym systemem geometrycznym**, a nie tylko rdzeniem obliczeniowym.
+
+## 17. TIMDR‑IO — Warstwa Wejścia/Wyjścia Geometrycznego
+
+TIMDR‑IO jest warstwą komunikacji TIMDR‑CPU ze światem zewnętrznym.  
+Nie operuje na bitach, bajtach ani pakietach.  
+Operuje na **kodach 0–255** oraz ich geometrycznych odpowiednikach `State9`.
+
+TIMDR‑IO jest trójwarstwowe:
+
+1. **IO‑A (Address IO)** — komunikacja kodowa 0–255  
+2. **IO‑F (Filtered IO)** — dopuszczalność F4‑RED  
+3. **IO‑G (Geometry IO)** — pełne stany `State9`
+
+TIMDR‑IO jest odpowiednikiem sterowników urządzeń w klasycznym OS, ale działa na **konfiguracjach pola**, nie na danych binarnych.
+
+---
+
+### 17.1. IO‑A — Address IO (warstwa kodowa)
+
+Warstwa IO‑A przyjmuje i wysyła kody:
+
+
+
+\[
+k \in \{0,1,\dots,255\}
+\]
+
+
+
+Każdy kod jest:
+
+- wejściem do TIMDR‑CPU,  
+- wyjściem z TIMDR‑CPU,  
+- reprezentacją geometrycznego stanu pola.
+
+IO‑A jest kompatybilne z klasycznymi systemami binarnymi — to jedyna warstwa TIMDR‑IO, którą można podłączyć do tradycyjnego komputera.
+
+---
+
+### 17.2. IO‑F — Filtered IO (warstwa dopuszczalności)
+
+IO‑F tłumaczy kod na stan geometryczny:
+
+
+
+\[
+k \rightarrow S
+\]
+
+
+
+i natychmiast sprawdza dopuszczalność:
+
+
+
+\[
+S \in \text{F4‑RED}
+\]
+
+
+
+Jeśli stan jest niedopuszczalny:
+
+- transfer jest blokowany,  
+- TIMDR‑Clock zatrzymuje cykl,  
+- pipeline nie startuje.
+
+IO‑F jest warstwą bezpieczeństwa wejścia/wyjścia.
+
+---
+
+### 17.3. IO‑G — Geometry IO (warstwa pola)
+
+IO‑G operuje na pełnych stanach:
+
+
+
+\[
+S = (b_1, b_2, \dots, b_9),\quad b_i \in \{-1,+1\}
+\]
+
+
+
+Warstwa geometryczna:
+
+- przekazuje stan do R0 (wejście pipeline),  
+- odbiera stan z R7 (wyjście pipeline),  
+- może być używana przez TIMDR‑Apps do bezpośredniej pracy na polu.
+
+IO‑G jest odpowiednikiem „raw device access” w klasycznym OS, ale operuje na **State9**, nie na bajtach.
+
+---
+
+### 17.4. Kierunki przepływu TIMDR‑IO
+
+Wejście:
+
+
+
+\[
+k_{in} \rightarrow \text{IO‑A} \rightarrow \text{IO‑F} \rightarrow \text{IO‑G} \rightarrow R0
+\]
+
+
+
+Wyjście:
+
+
+
+\[
+R7 \rightarrow \text{IO‑G} \rightarrow \text{IO‑F} \rightarrow \text{IO‑A} \rightarrow k_{out}
+\]
+
+
+
+Każdy kierunek jest w pełni walidowany przez F4‑RED.
+
+---
+
+### 17.5. TIMDR‑IO jako sterowniki geometryczne
+
+TIMDR‑IO może obsługiwać:
+
+- wejścia geometryczne (np. sekwencje kodów),  
+- wyjścia geometryczne (np. strumienie stanów),  
+- urządzenia zewnętrzne, które komunikują się kodami 0–255,  
+- TIMDR‑Apps, które operują bezpośrednio na `State9`.
+
+TIMDR‑IO nie obsługuje plików, sieci ani protokołów binarnych.  
+Obsługuje **strumienie pola geometrycznego**.
+
+---
+
+### 17.6. Znaczenie TIMDR‑IO
+
+TIMDR‑IO:
+
+- jest warstwą komunikacji TIMDR‑CPU ze światem zewnętrznym,  
+- tłumaczy między kodami 0–255 a stanami geometrycznymi,  
+- zapewnia dopuszczalność F4‑RED na wejściu i wyjściu,  
+- integruje TIMDR‑CPU z TIMDR‑OS i TIMDR‑Apps,  
+- jest podstawą działania TIMDR‑komputera jako maszyny geometrycznej.
+
+TIMDR‑IO jest tym, co pozwala TIMDR‑CPU **rozmawiać z otoczeniem**, zachowując swoją geometryczną naturę.
