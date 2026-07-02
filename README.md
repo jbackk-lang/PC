@@ -257,3 +257,68 @@ def test_filter_252_distribution():
     assert stats["accepted"] > 0
     assert stats["rejected"] > 0
 
+## ## 8. Kodowanie 252 → 256 (warstwa adresowa TIMDR‑CPU)
+
+Rdzeń TIMDR operuje na 252 dopuszczalnych konfiguracjach F4‑RED.  
+Przestrzeń adresowa CPU ma 256 możliwych kodów (0–255).  
+Warstwa kodowania 252→256 zapewnia stabilne odwzorowanie:
+
+- 252 stanów geometrycznych,
+- 4 stany specjalne (meta‑stany).
+
+### 8.1. Struktura kodowania
+
+Każdy stan F4‑RED jest reprezentowany jako wektor:
+
+
+
+\[
+v = (b_1, b_2, \dots, b_9),\quad b_i \in \{-1, +1\}
+\]
+
+
+
+który spełnia warunek równowagi:
+
+
+
+\[
+|N_{+} - N_{-}| \le 1
+\]
+
+
+
+Warstwa kodowania przypisuje każdemu dopuszczalnemu stanowi unikalny kod:
+
+
+
+\[
+\text{encode}(v) \rightarrow k,\quad k \in \{0,1,\dots,251\}
+\]
+
+
+
+Pozostałe cztery kody są zarezerwowane:
+
+- 252 — RESET  
+- 253 — NULL  
+- 254 — OVER\_τ  
+- 255 — OVER\_ΔS  
+
+### 8.2. Własności kodowania
+
+Kodowanie jest:
+
+- **bijekcją** między 252 stanami F4‑RED a kodami 0–251,
+- **stabilne** — każdy stan ma zawsze ten sam kod,
+- **odwracalne** — możliwa jest rekonstrukcja stanu:
+
+
+
+\[
+\text{decode}(k) \rightarrow v
+\]
+
+
+
+dla każdego \(k 
