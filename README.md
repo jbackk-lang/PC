@@ -373,4 +373,154 @@ State9 jest:
 ### 9.2. Znaczenie State9 w TIMDR‑CPU
 
 State9 jest tym, czym „słowo maszynowe” jest dla klasycznego CPU.  
-W TIM
+W TIMMDR‑CPU:
+
+- 256‑bit jest warstwą adresową,  
+- 252 stany F4‑RED są warstwą geometryczną,  
+- State9 jest warstwą operacyjną.
+
+To oznacza:
+
+- operacje CPU są transformacjami geometrycznymi,  
+- nie ma bitów 0/1,  
+- jest tylko State9 → F4‑RED → kod 0–255.
+
+State9 jest fundamentem działania TIMDR‑komputera.
+
+## 10. Pipeline TIMDR‑CPU — pełna sekwencja operacyjna rdzenia PC
+
+Pipeline TIMDR‑CPU opisuje dokładną kolejność transformacji geometrycznych wykonywanych na stanie `State9`.  
+Każdy krok jest operacją na przestrzeni F4‑RED i musi przejść przez filtr dopuszczalności 252 stanów.
+
+Pipeline działa na zasadzie:
+
+
+
+\[
+\text{State9}_{in} \rightarrow \text{Motion} \rightarrow \text{Rotation} \rightarrow \text{TwistOperator} \rightarrow \text{Tetroid} \rightarrow \text{Triangle} \rightarrow \text{SkretAI} \rightarrow \text{Memory}
+\]
+
+
+
+Każdy moduł generuje nowy stan, który natychmiast przechodzi przez `PCFilterLayer`.
+
+### 10.1. Motion — inicjalny ruch stanu
+
+Motion wykonuje przesunięcie stanu w osi czasu/fazy.  
+Jest to pierwszy operator, który przekształca wejściowy `State9`.
+
+
+
+\[
+S_1 = \text{Motion}(S_0)
+\]
+
+
+
+Jeśli `S_1` nie spełnia warunku F4‑RED, pipeline kończy działanie.
+
+### 10.2. Rotation — obrót triady λ‑τ‑ρ
+
+Rotation wykonuje transformację geometryczną w triadzie λ‑τ‑ρ.
+
+
+
+\[
+S_2 = \text{Rotation}(S_1)
+\]
+
+
+
+Stan musi pozostać w przestrzeni 252 konfiguracji.
+
+### 10.3. TwistOperator — skręt Möbiusa
+
+TwistOperator wykonuje skręt strukturalny:
+
+
+
+\[
+S_3 = \text{TwistOperator}(S_2)
+\]
+
+
+
+Skręt jest kluczowy dla przejścia He → Fe → Og w modelu TIMDR.
+
+### 10.4. Tetroid — ewolucja czterowymiarowa
+
+Tetroid wykonuje transformację w przestrzeni czterowymiarowej:
+
+
+
+\[
+S_4 = \text{Tetroid}(S_3)
+\]
+
+
+
+Jest to główna warstwa stabilizacji stanu.
+
+### 10.5. Triangle — projekcja lokalna
+
+Triangle wykonuje projekcję 2D skrętu:
+
+
+
+\[
+S_5 = \text{Triangle}(S_4)
+\]
+
+
+
+Projekcja musi zachować dopuszczalność F4‑RED.
+
+### 10.6. SkretAI — interpretacja pola
+
+SkretAI interpretuje stan geometryczny jako strukturę pola:
+
+
+
+\[
+S_6 = \text{SkretAI}(S_5)
+\]
+
+
+
+Jest to warstwa semantyczna TIMDR‑CPU.
+
+### 10.7. Memory — zapis sekwencji
+
+TransitionMemory zapisuje tylko stany dopuszczalne:
+
+
+
+\[
+\text{Memory.push}(S_6)
+\]
+
+
+
+Jeśli stan jest odrzucony przez filtr, nie jest zapisywany.
+
+### 10.8. Pipeline jako cykl CPU
+
+Pipeline TIMDR‑CPU jest cyklem:
+
+
+
+\[
+S_{n+1} = \text{Pipeline}(S_n)
+\]
+
+
+
+Każdy cykl:
+
+- zaczyna się od Motion,  
+- kończy się zapisaniem stanu w Memory,  
+- działa wyłącznie na przestrzeni 252 stanów F4‑RED,  
+- jest w pełni odwracalny dzięki warstwie kodowania 252→256.
+
+Pipeline jest tym, co czyni PC pełnoprawnym **TIMDR‑CPU**, a nie tylko zestawem operatorów geometrycznych.
+
