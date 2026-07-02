@@ -1627,3 +1627,91 @@ TIMDR‑VM:
 - jest podstawą działania TIMDR jako pełnej maszyny geometrycznej.
 
 TIMDR‑VM jest odpowiednikiem JVM lub CLR, ale operuje na **State9**, nie na bajtach.
+## 19. TIMDR‑Apps — Programy Geometryczne TIMDR
+
+TIMDR‑Apps są programami wysokiego poziomu działającymi na TIMDR‑VM, TIMDR‑OS i TIMDR‑CPU.  
+Nie są to aplikacje binarne, lecz **aplikacje geometryczne**, które operują na sekwencjach `State9` i instrukcjach TIMDR‑ISA.  
+TIMDR‑Apps definiują zachowanie pola, a nie operacje na danych.
+
+TIMDR‑Apps są tym, czym dla klasycznego komputera są aplikacje użytkowe, ale działają na **konfiguracjach pola**, nie na bitach.
+
+### 19.1. Struktura TIMDR‑Apps
+
+TIMDR‑App składa się z trzech warstw:
+
+- warstwa logiki geometrycznej (opis zachowania pola),  
+- warstwa programu TIMDR‑VM (sekwencje instrukcji TIMDR‑ISA),  
+- warstwa wejścia/wyjścia TIMDR‑IO (komunikacja kodowa 0–255).
+
+Każda aplikacja jest w pełni zgodna z F4‑RED i działa wyłącznie na dopuszczalnych stanach.
+
+### 19.2. Model działania TIMDR‑App
+
+TIMDR‑App definiuje funkcję:
+
+
+
+\[
+S_{out} = \text{App}(S_{in})
+\]
+
+
+
+gdzie:
+
+- \(S_{in}\) jest stanem wejściowym pola,  
+- \(S_{out}\) jest stanem wyjściowym po pełnej ewolucji,  
+- cała transformacja jest wykonana przez TIMDR‑VM i TIMDR‑CPU.
+
+TIMDR‑App nie przetwarza danych.  
+TIMDR‑App przetwarza **pole geometryczne**.
+
+### 19.3. TIMDR‑App jako program geometryczny
+
+Program geometryczny jest sekwencją:
+
+
+
+\[
+P = [I_1, I_2, \dots, I_n]
+\]
+
+
+
+gdzie każda instrukcja \(I_k\) należy do TIMDR‑ISA:
+
+- MOT  
+- ROT  
+- TWI  
+- TET  
+- TRI  
+- SKR  
+- MEM
+
+Program geometryczny jest wykonywany przez TIMDR‑VM, a jego efekty są zapisywane w M‑RAM.
+
+### 19.4. TIMDR‑Apps jako warstwa użytkowa TIMDR‑komputera
+
+TIMDR‑Apps mogą:
+
+- generować sekwencje pola,  
+- stabilizować konfiguracje,  
+- wykonywać transformacje geometryczne,  
+- analizować ewolucję pola,  
+- komunikować się przez TIMDR‑IO,  
+- tworzyć złożone systemy geometryczne.
+
+TIMDR‑Apps nie mają dostępu do bitów, bajtów ani plików.  
+TIMDR‑Apps mają dostęp do **State9**, kodów 0–255 i TIMDR‑VM.
+
+### 19.5. Znaczenie TIMDR‑Apps
+
+TIMDR‑Apps:
+
+- zamykają pełną architekturę TIMDR‑komputera,  
+- pozwalają użytkownikowi tworzyć programy geometryczne,  
+- działają na TIMDR‑VM, TIMDR‑OS, TIMDR‑IO i TIMDR‑CPU,  
+- są najwyższą warstwą systemu TIMDR,  
+- definiują praktyczne zastosowania TIMDR jako maszyny geometrycznej.
+
+TIMDR‑Apps są tym, co pozwala TIMDR‑CPU wykonywać **realne operacje pola**, a nie tylko pojedyncze instrukcje.
