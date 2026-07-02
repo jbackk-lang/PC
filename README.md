@@ -322,3 +322,55 @@ Kodowanie jest:
 
 
 dla każdego \(k 
+
+## 9. State9 — wspólny format stanu TIMDR
+
+State9 jest jednolitym formatem reprezentacji stanu w rdzeniu TIMDR.  
+Każdy moduł PC (Motion, Rotation, TwistOperator, Tetroid, Triangle, SkretAI, Memory, JCompressor) operuje na tej samej strukturze:
+
+
+
+\[
+\text{State9} = (b_1, b_2, \dots, b_9),\quad b_i \in \{-1, +1\}
+\]
+
+
+
+gdzie dziewięć wartości odpowiada dziewięciu pierwiastkom strukturalnym F4‑RED:
+
+- ΔS  
+- τ  
+- Λ₁  
+- Λ₂  
+- Λ₃  
+- trzy sprzężenia ramion  
+- dwa sprzężenia stabilizujące
+
+State9 jest minimalną, kompletną reprezentacją stanu geometrycznego TIMDR.
+
+### 9.1. Własności State9
+
+State9 spełnia:
+
+
+
+\[
+|N_{+} - N_{-}| \le 1
+\]
+
+
+
+co oznacza, że należy do przestrzeni 252 dopuszczalnych konfiguracji F4‑RED.  
+Każdy stan jest natychmiast walidowany przez `PCFilterLayer`.
+
+State9 jest:
+
+- **atomowy** — nie ma części opcjonalnych,  
+- **geometryczny** — nie jest binarny,  
+- **jednolity** — wszystkie moduły PC używają tej samej struktury,  
+- **odwracalny** — można go zakodować i odkodować (sekcja 8).
+
+### 9.2. Znaczenie State9 w TIMDR‑CPU
+
+State9 jest tym, czym „słowo maszynowe” jest dla klasycznego CPU.  
+W TIM
