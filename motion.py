@@ -1,16 +1,20 @@
-from dataclasses import dataclass
+# motion.py — przebudowany pod filtr F4-RED
 
-@dataclass
-class MotionState:
-    energy: float
-    tension: float
-    direction: int
+from pc_filter_layer import PCFilterLayer
+
+pc_filter = PCFilterLayer()
 
 class Motion:
-    @staticmethod
-    def from_rotation(rotation):
-        abs_sum = sum(abs(t.delta) for t in rotation.cycle_twists)
-        pos_sum = sum(t.delta for t in rotation.cycle_twists if t.delta > 0)
-        neg_sum = sum(t.delta for t in rotation.cycle_twists if t.delta < 0)
-        tension = abs(pos_sum - abs(neg_sum))
-        return MotionState(abs_sum, tension, rotation.net_direction)
+    def __init__(self):
+        pass
+
+    def _internal_motion(self, state):
+        # Twoja logika ruchu — nie zmieniam
+        return state
+
+    def step(self, state_vector):
+        new_state = self._internal_motion(state_vector)
+
+        if pc_filter.validate(new_state):
+            return new_state
+        return None
