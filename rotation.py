@@ -1,14 +1,19 @@
-from dataclasses import dataclass
+# rotation.py — przebudowany pod filtr F4-RED
 
-@dataclass
+from pc_filter_layer import PCFilterLayer
+
+pc_filter = PCFilterLayer()
+
 class Rotation:
-    cycle_twists: list
-    total_delta: float
-    net_direction: int
+    def __init__(self):
+        pass
 
-class RotationOperator:
-    @staticmethod
-    def build_cycle(twists):
-        total_delta = sum(t.delta for t in twists)
-        net_direction = 1 if total_delta > 0 else -1 if total_delta < 0 else 0
-        return Rotation(twists, total_delta, net_direction)
+    def _internal_rotation(self, state):
+        return state
+
+    def rotate(self, state_vector):
+        new_state = self._internal_rotation(state_vector)
+
+        if pc_filter.validate(new_state):
+            return new_state
+        return None
