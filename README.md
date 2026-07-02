@@ -788,3 +788,335 @@ Magistrala TIMDR:
 
 W klasycznym CPU magistrala przenosi liczby.  
 W TIMDR‑CPU magistrala przenosi **konfiguracje pola**.
+
+## 13. TIMDR‑Clock — stabilność sekwencyjna rdzenia PC
+
+TIMDR‑Clock jest zegarem sekwencyjnym rdzenia TIMDR‑CPU.  
+Nie jest to zegar binarny (0/1), lecz zegar **geometryczny**, który kontroluje:
+
+- stabilność przejścia między rejestrami R0–R7,
+- dopuszczalność stanu w każdym kroku,
+- synchronizację magistrali TIMDR,
+- cykl pipeline Motion → Rotation → TwistOperator → Tetroid → Triangle → SkretAI → Memory.
+
+TIMDR‑Clock działa na poziomie **konfiguracji pola**, nie na poziomie impulsów elektrycznych.
+
+### 13.1. Struktura TIMDR‑Clock
+
+Zegar składa się z trzech warstw:
+
+1. **C‑Geo (Clock Geometry)** — stan geometryczny zegara,  
+2. **C‑Val (Clock Validation)** — walidacja dopuszczalności F4‑RED,  
+3. **C‑Seq (Clock Sequence)** — sekwencja kroków pipeline.
+
+Każdy cykl zegara jest transformacją geometryczną, która musi przejść przez filtr F4‑RED.
+
+### 13.2. Cykl zegara TIMDR
+
+Cykl zegara definiuje przejście:
+
+
+
+\[
+S_{n+1} = \text{Pipeline}(S_n)
+\]
+
+
+
+gdzie pipeline jest pełną sekwencją operatorów rdzenia PC.
+
+TIMDR‑Clock gwarantuje:
+
+- że każdy krok pipeline jest wykonany w poprawnej kolejności,
+- że każdy stan jest dopuszczalny (252 konfiguracje),
+- że pipeline zatrzymuje się natychmiast, jeśli stan jest niedopuszczalny.
+
+### 13.3. TIMDR‑Clock jako kontrola stabilności
+
+TIMDR‑Clock pełni funkcję stabilizatora:
+
+- jeśli którykolwiek operator wygeneruje stan spoza F4‑RED,  
+  zegar **blokuje przejście** do następnego rejestru,
+- pipeline zatrzymuje się na tym kroku,
+- magistrala TIMDR nie przesyła stanu dalej,
+- pamięć nie zapisuje sekwencji.
+
+Zegar jest więc mechanizmem bezpieczeństwa rdzenia PC.
+
+### 13.4. TIMDR‑Clock jako kontrola sekwencji
+
+Każdy cykl zegara wykonuje dokładnie:
+
+1. Motion  
+2. Rotation  
+3. TwistOperator  
+4. Tetroid  
+5. Triangle  
+6. SkretAI  
+7. Memory
+
+Zegar gwarantuje, że:
+
+- operator nie może być pominięty,
+- operator nie może być wykonany dwa razy w jednym cyklu,
+- operator nie może być wykonany poza kolejnością.
+
+TIMDR‑Clock jest sekwencyjnym rdzeniem TIMDR‑CPU.
+
+### 13.5. TIMDR‑Clock jako warstwa czasowa TIMDR‑komputera
+
+TIMDR‑Clock jest warstwą czasową:
+
+- każdy cykl zegara to jeden krok ewolucji pola,
+- pipeline jest interpretowany jako transformacja geometryczna w czasie,
+- pamięć przechowuje sekwencję stanów geometrycznych.
+
+W klasycznym CPU zegar steruje impulsami.  
+W TIMDR‑CPU zegar steruje **ewolucją pola**.
+
+### 13.6. Znaczenie TIMDR‑Clock
+
+TIMDR‑Clock:
+
+- zapewnia stabilność pipeline,  
+- kontroluje dopuszczalność stanów,  
+- synchronizuje magistralę TIMDR,  
+- utrzymuje poprawną sekwencję operatorów,  
+- jest podstawą działania TIMDR‑CPU jako maszyny geometrycznej.
+
+TIMDR‑Clock jest tym, co pozwala PC działać nie jako zestaw operatorów, lecz jako **pełny procesor TIMDR**.
+
+## 14. TIMDR‑ISA — Instrukcje Geometryczne TIMDR‑CPU
+
+TIMDR‑ISA (Instruction Set Architecture) definiuje zestaw instrukcji, które rdzeń TIMDR‑CPU może wykonywać.  
+W przeciwieństwie do klasycznych ISA (x86, ARM, RISC‑V), TIMDR‑ISA nie operuje na bitach 0/1, lecz na **konfiguracjach pola** reprezentowanych jako `State9`.
+
+Instrukcje TIMDR‑ISA są transformacjami geometrycznymi:
+
+
+
+\[
+\text{Instrukcja}(State9) \rightarrow State9'
+\]
+
+
+
+Każda instrukcja:
+
+- działa na 9‑elementowym wektorze ±1,  
+- musi przejść przez filtr F4‑RED (252 stany),  
+- jest wykonywana w cyklu TIMDR‑Clock,  
+- aktualizuje odpowiedni rejestr R0–R7,  
+- generuje kod 0–255 przez warstwę kodowania 252→256.
+
+### 14.1. Klasy instrukcji TIMDR‑ISA
+
+TIMDR‑ISA składa się z siedmiu instrukcji podstawowych, odpowiadających operatorom rdzenia PC:
+
+1. **MOT** — Motion  
+2. **ROT** — Rotation  
+3. **TWI** — TwistOperator  
+4. **TET** — Tetroid  
+5. **TRI** — Triangle  
+6. **SKR** — SkretAI  
+7. **MEM** — Memory Commit
+
+Każda instrukcja jest atomowa i niepodzielna.
+
+### 14.2. MOT — Motion Instruction
+
+Instrukcja MOT wykonuje przesunięcie stanu w osi czasu/fazy:
+
+
+
+\[
+S' = \text{Motion}(S)
+\]
+
+
+
+Aktualizuje rejestr:
+
+
+
+\[
+R1 = S'
+\]
+
+
+
+### 14.3. ROT — Rotation Instruction
+
+Instrukcja ROT wykonuje obrót triady λ‑τ‑ρ:
+
+
+
+\[
+S' = \text{Rotation}(S)
+\]
+
+
+
+Aktualizuje rejestr:
+
+
+
+\[
+R2 = S'
+\]
+
+
+
+### 14.4. TWI — Twist Instruction
+
+Instrukcja TWI wykonuje skręt Möbiusa:
+
+
+
+\[
+S' = \text{TwistOperator}(S)
+\]
+
+
+
+Aktualizuje rejestr:
+
+
+
+\[
+R3 = S'
+\]
+
+
+
+### 14.5. TET — Tetroid Instruction
+
+Instrukcja TET wykonuje ewolucję czterowymiarową:
+
+
+
+\[
+S' = \text{Tetroid}(S)
+\]
+
+
+
+Aktualizuje rejestr:
+
+
+
+\[
+R4 = S'
+\]
+
+
+
+### 14.6. TRI — Triangle Instruction
+
+Instrukcja TRI wykonuje projekcję lokalną:
+
+
+
+\[
+S' = \text{Triangle}(S)
+\]
+
+
+
+Aktualizuje rejestr:
+
+
+
+\[
+R5 = S'
+\]
+
+
+
+### 14.7. SKR — SkretAI Instruction
+
+Instrukcja SKR wykonuje interpretację pola:
+
+
+
+\[
+S' = \text{SkretAI}(S)
+\]
+
+
+
+Aktualizuje rejestr:
+
+
+
+\[
+R6 = S'
+\]
+
+
+
+### 14.8. MEM — Memory Commit Instruction
+
+Instrukcja MEM zapisuje stan końcowy cyklu:
+
+
+
+\[
+\text{Memory.push}(S)
+\]
+
+
+
+Aktualizuje rejestr:
+
+
+
+\[
+R7 = S
+\]
+
+
+
+### 14.9. Cykl instrukcji TIMDR‑ISA
+
+Pełny cykl TIMDR‑CPU to sekwencja:
+
+
+
+\[
+\text{MOT} \rightarrow \text{ROT} \rightarrow \text{TWI} \rightarrow \text{TET} \rightarrow \text{TRI} \rightarrow \text{SKR} \rightarrow \text{MEM}
+\]
+
+
+
+Każda instrukcja:
+
+- działa na `State9`,  
+- jest walidowana przez F4‑RED,  
+- generuje kod 0–255,  
+- aktualizuje odpowiedni rejestr,  
+- jest wykonywana w jednym cyklu TIMDR‑Clock.
+
+### 14.10. TIMDR‑ISA jako język maszynowy TIMDR‑CPU
+
+TIMDR‑ISA jest językiem maszynowym TIMDR‑CPU:
+
+- klasyczne CPU: ADD, MOV, XOR, JMP  
+- TIMDR‑CPU: MOT, ROT, TWI, TET, TRI, SKR, MEM
+
+Instrukcje TIMDR‑ISA nie manipulują bitami.  
+Manipulują **konfiguracjami pola**.
+
+To jest fundamentalna różnica między TIMDR a klasyczną architekturą binarną.
+
+### 14.11. Znaczenie TIMDR‑ISA
+
+TIMDR‑ISA:
+
+- definiuje zachowanie rdzenia PC,  
+- określa kolejność transformacji geometrycznych,  
+- zapewnia spójność pipeline,  
+- umożliwia budowę wyższych warstw (TIMDR‑VM, TIMDR‑OS),  
+- jest podstawą działania TIMDR‑komputera.
+
+TIMDR‑ISA jest tym, co czyni PC pełnoprawnym **procesorem geometrycznym**, a nie tylko zestawem operatorów.
