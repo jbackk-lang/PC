@@ -2,11 +2,33 @@
 Pełna lista projektów znajduje się na stronie:
 https://jbackk-lang.github.io
 
-README — PC (Processing Core TIMDER)
-Architektura obliczeniowa oparta na strukturze F4‑RED (252 stany)
-PC jest rdzeniem obliczeniowym systemu TIMDER.
-Nie jest klasycznym procesorem binarnym, lecz maszyną geometryczną pracującą na pełnej strukturze F4 z redukcją jednego ramienia, która daje 252 dopuszczalne stany.
-To jest natywna przestrzeń obliczeniowa TIMDR/GIA.
+TIMDR‑PC — Geometryczny Rdzeń Obliczeniowy F4‑RED
+TIMDR‑PC jest procesorem geometrycznym opartym na strukturze F4‑RED, która posiada 252 dopuszczalne konfiguracje wynikające z równowagi dziewięciu pierwiastków ±1. Rdzeń nie operuje na bitach, lecz na konfiguracjach pola reprezentowanych jako State9. Warstwa 256‑bitowa pełni funkcję adresową, odwzorowując 252 stany geometryczne oraz cztery meta‑stany RESET, NULL, OVER‑τ i OVER‑ΔS.
+
+Architektura F4‑RED
+Model F4‑RED powstaje przez redukcję jednego z czterech ramion klasycznej figury F4. Trzy aktywne ramiona przejmują jego rolę, generując dziewięć pierwiastków strukturalnych. Każdy pierwiastek ma dwa sprzężenia ±1, co daje 512 możliwych konfiguracji. Filtr F4‑RED dopuszcza tylko te, które spełniają warunek równowagi, pozostawiając 252 stabilne stany. To jest natywna przestrzeń obliczeniowa TIMDR.
+
+State9 — Format Stanu Geometrycznego
+State9 jest dziewięcioelementowym wektorem ±1 reprezentującym pełną konfigurację pola. Każdy moduł TIMDR‑PC operuje na tej samej strukturze, a każdy stan jest natychmiast walidowany przez filtr F4‑RED. State9 jest atomowy, odwracalny i jednolity w całym rdzeniu.
+
+Pipeline TIMDR‑CPU
+Pipeline TIMDR‑CPU wykonuje sekwencję transformacji geometrycznych:
+
+Motion → Rotation → TwistOperator → Tetroid → Triangle → SkretAI → Memory
+
+Każdy krok generuje nowy State9, który musi pozostać w przestrzeni 252 dopuszczalnych konfiguracji. Pipeline zatrzymuje się automatycznie, jeśli stan wyjdzie poza dopuszczalną przestrzeń.
+
+Rejestry i Magistrala TIMDR
+Rejestry R0–R7 przechowują kolejne etapy transformacji geometrycznej, a ich odpowiedniki kodowe K0–K7 odwzorowują stany w przestrzeni 0–255. Magistrala TIMDR przesyła State9, filtruje dopuszczalność i generuje kod adresowy, zapewniając stabilność całego cyklu. TIMDR‑Clock steruje ewolucją pola, nie impulsami elektrycznymi.
+
+TIMDR‑ISA — Instrukcje Geometryczne
+TIMDR‑ISA definiuje instrukcje MOT, ROT, TWI, TET, TRI, SKR i MEM. Instrukcje nie manipulują bitami, lecz konfiguracjami pola. Każda instrukcja jest atomowa i wykonywana w jednym cyklu TIMDR‑Clock.
+
+TIMDR‑OS i TIMDR‑IO
+TIMDR‑OS zarządza pipeline, zegarem, pamięcią i warstwą IO, tworząc pełny system operacyjny pola. TIMDR‑IO tłumaczy kody 0–255 na State9 i odwrotnie, umożliwiając komunikację rdzenia PC z klasycznym środowiskiem komputerowym.
+
+Kompatybilność
+TIMDR‑PC jest w pełni zgodny z MAPA‑PO‑HELU, math‑validator‑2.0 oraz modelami geometrycznymi TIMDR/GIA. Architektura jest spójna, odwracalna i stabilna, tworząc fundament przyszłego komputera geometrycznego.
 
 Repozytorium PC zawiera operatory i struktury, które odwzorowują tę geometrię:
 
