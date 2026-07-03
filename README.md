@@ -1,3 +1,7 @@
+## 🔗 Wszystkie modele i repozytoria
+Pełna lista projektów znajduje się na stronie:
+https://jbackk-lang.github.io
+
 README — PC (Processing Core TIMDER)
 Architektura obliczeniowa oparta na strukturze F4‑RED (252 stany)
 PC jest rdzeniem obliczeniowym systemu TIMDER.
